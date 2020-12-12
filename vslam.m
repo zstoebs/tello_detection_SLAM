@@ -150,7 +150,7 @@ if isMapInitialized
     % Show matched features
     hfeature = showMatchedFeatures(firstI, currI, prePoints(indexPairs(:,1)), ...
         currPoints(indexPairs(:, 2)), 'Montage');
-    saveas(gcf,'./imgs/matches.png')
+    saveas(gcf,'./imgs/slam/matches.png')
 else
     error('Unable to initialize map.')
 end
@@ -223,16 +223,12 @@ directionAndDepth = update(directionAndDepth, mapPointSet, vSetKeyFrames.Views, 
 % Visualize matched features in the current frame
 close(hfeature.Parent.Parent);
 featurePlot   = helperVisualizeMatchedFeatures(currI, currPoints(indexPairs(:,2)));
-fplot = gcf;
-saveas(fplot,'./imgs/fplot0.png')
 
 % Visualize initial map points and camera trajectory
 mapPlot       = helperVisualizeMotionAndStructure(vSetKeyFrames, mapPointSet);
 
 % Show legend
 showLegend(mapPlot);
-mplot = gcf;
-saveas(mplot,'./imgs/mplot0.png')
 
 % ViewId of the current key frame
 currKeyFrameId    = currViewId;
@@ -253,6 +249,8 @@ addedFramesIdx    = [1; lastKeyFrameIdx];
 hs = findall(groot,'Type','Figure');
 fplot = hs(1);
 mplot = hs(2);
+saveas(fplot,'./imgs/slam/fplot0.png')
+saveas(mplot,'./imgs/slam/mplot0.png')
 
 % Main loop
 move_idx = 0;
@@ -268,6 +266,9 @@ while move_idx < total_moves
         
         % guaranteed no error
         fprintf('Movement %d of %d\n',move_idx,total_moves)
+        fprintf("dX = %d\n",vec(1))
+        fprintf("dY = %d\n",vec(2))
+        fprintf("dZ = %d\n",vec(3))
         move_idx = move_idx + 1;
         break_iter = 0;
     catch
@@ -275,7 +276,7 @@ while move_idx < total_moves
             break_iter = break_iter + 1;
             continue
         else
-            error('Movement command not received by Tello.\n')
+            error('Movement command not received by Tello on iteration %d.\n',move_idx)
         end
     end
     currI = snapshot(cam);
@@ -310,7 +311,7 @@ while move_idx < total_moves
     
     % Visualize matched features
     updatePlot(featurePlot, currI, currPoints(featureIdx));
-    saveas(fplot,sprintf('./imgs/fplot_%d.png',move_idx))
+    saveas(fplot,sprintf('./imgs/slam/fplot_%d.png',move_idx))
     
     if ~isKeyFrame
         currFrameIdx = currFrameIdx + 1;
@@ -342,7 +343,7 @@ while move_idx < total_moves
     
     % Visualize 3D world points and camera trajectory
     updatePlot(mapPlot, vSetKeyFrames, mapPointSet);
-    saveas(mplot,sprintf('./imgs/mplot_%d.png',move_idx))
+    saveas(mplot,sprintf('./imgs/slam/mplot_%d.png',move_idx))
 
     catch
         currFrameIdx = currFrameIdx + 1;
@@ -356,20 +357,21 @@ while move_idx < total_moves
     currFrameIdx  = currFrameIdx + 1;
 end % End of main loop
 
-% Optimize the poses
-vSetKeyFramesOptim = optimizePoses(vSetKeyFrames, minNumMatches, 'Tolerance', 1e-16, 'Verbose', true);
-
-% Update map points after optimizing the poses
-mapPointSet = helperUpdateGlobalMap(mapPointSet, directionAndDepth, ...
-    vSetKeyFrames, vSetKeyFramesOptim);
-
-updatePlot(mapPlot, vSetKeyFrames, mapPointSet);
-
-% Plot the optimized camera trajectory
-optimizedPoses  = poses(vSetKeyFramesOptim);
-plotOptimizedTrajectory(mapPlot, optimizedPoses)
-
-% Update legend
-showLegend(mapPlot);
-saveas(mplot,'./imgs/final_mplot.png')
+%% Only works if point graph is well-formed, continous --> probably won't happen for Tello but keeping it here just in case
+% % Optimize the poses
+% vSetKeyFramesOptim = optimizePoses(vSetKeyFrames, minNumMatches, 'Tolerance', 1e-16, 'Verbose', true);
+% 
+% % Update map points after optimizing the poses
+% mapPointSet = helperUpdateGlobalMap(mapPointSet, directionAndDepth, ...
+%     vSetKeyFrames, vSetKeyFramesOptim);
+% 
+% updatePlot(mapPlot, vSetKeyFrames, mapPointSet);
+% 
+% % Plot the optimized camera trajectory
+% optimizedPoses  = poses(vSetKeyFramesOptim);
+% plotOptimizedTrajectory(mapPlot, optimizedPoses)
+% 
+% % Update legend
+% showLegend(mapPlot);
+% saveas(mplot,'./imgs/final_mplot.png')
 end

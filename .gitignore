@@ -1,3 +1,5 @@
+*.doc
+*.docx
 .DS_Store
 *.asv
 imgs

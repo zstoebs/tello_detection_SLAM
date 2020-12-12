@@ -2,13 +2,20 @@
 %
 % Environment: Tello, OpenCV face detection, and vSLAM are extremely sensitive
 % to lighting in order to function properly. Tello doesn't counteract 
-% drafts --> blown off course often. Theoretically, the best space for this
+% drafts and turbulence from flying in small, hard-surfaced spaces --> 
+% blown off course often. Theoretically, the best space for this
 % problem is a spacious, well-lit, draftless, indoor area... make do with 
 % what you got. 
 %
 % Connectivity: Tello programming depends on a ground station's connection
 % to Tello's local wifi, which isn't great even for what it is. Often
 % times, clearing the environment
+% 
+% Battery: Tello only has 12 minutes of continous flight time which feels
+% significantly smaller with lots of starts and stops. Make sure it's
+% fully charged to start with and I suggest no flying at <20%. Low battery
+% can cause a whole host of problems and is probably tied to overheating as
+% well so beware. 
 %
 % Reset: Tello's destructor includes auto-landing. No need to manually land
 % the drone if an error is raised and it's left hovering. Run the cleanup
@@ -40,7 +47,19 @@
 % components in track.m. 
 %
 % vSLAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+% The source is vslam.m and is not handled by main. Hence, the drone is
+% moved from within the function, which adds some overhead. I added error
+% handling to a reasonable extent for these problems, but they may still
+% reoccur. This process is slower than face tracking and much buggier
+% because there are a lot of moving parts. Since it takes longer, there is
+% a higher probability that the drone will lose connection to the ground
+% station along the way. Small values for the number of cycles and the
+% lenght of the move sequence are recommended until the toolkit / hardware
+% has more reliability. 
+%
+% Important: Matlab will crash if you disconnect from the drone's wifi
+% while there is still a drone object in the environment. Make sure you
+% clear the environment soon after resetting the run. 
 
 %% initial cleanup
 
@@ -65,14 +84,15 @@ faceDetector.ClassificationModel = 'FrontalFaceLBP';
 faceDetector.MinSize = [60 60];
 faceDetector.MergeThreshold = 10;
 
-stop = false;
+stop = 60;
 count = 0;
-
-start = tic;
-while ~stop
+tic
+while toc < stop
     [dX,dY,dZ,angle,faces] = track(cam,faceDetector,2);
     
     imshow(faces)
+    imwrite(faces.CData,sprintf('./imgs/faces/faces%d.png',count))
+    count = count + 1;
     
     % try the command
     % if not received, continue and try again
@@ -95,19 +115,17 @@ while ~stop
     catch
         fprintf("Command not received. Continuing.\n")
     end
-    
-    count = count + 1;
-    % reached threshold loops
-    if count == mx
-        stop = true;
-    end
 end
 land(drone)
 
 %% vSLAM
 
-moveseq = {[0, 0.75, 0], 0; 
-           [0, -0.5, 0], 0};
+% see toolkit documentation for move() axes
+% values are in meters
+moveseq = {[0, 0.5, 0], 0; 
+           [0.5, 0, 0], 0;
+           [0, -0.5, 0], 0; 
+           [-0.5, 0, 0], 0};
 
 % vslam
 % drone: drone object
