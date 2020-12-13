@@ -1,16 +1,16 @@
 %% Face Tracking 
 % detects faces  
-% returns distances to 
+% returns distance changes needed to center the drone on the detected face 
 %
 % Notes: 
 % place in a while loop for the drone to follow faces
 % consider threading this function in a background loop
 
-%% track
+%% follow
 % cam: drone camera object
 % detect: CascadeObjectDetector
 % dist: index [1-5] for distance to maintain 
-function [dX,dY,dZ,angle,faces] = track(cam,detector,dist)
+function [dX,dY,dZ,angle,faces] = follow(cam,detector,dist)
 
 % bbox sizes for OpenCV
 sizes = [140,120,100,80,60];

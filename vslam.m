@@ -27,7 +27,7 @@
 % moveseq: cell array with rows containing a vector and an angle
 % cycles: total number cycles for movement
 % minMatches: minimum number of ORB feature matches for triangulation
-function [fplot, mplot] = vslam(drone, cam, moveseq, cycles, minMatches)
+function vslam(drone, cam, moveseq, cycles, minMatches)
 
 % Inspect the first image
 currFrameIdx = 1;

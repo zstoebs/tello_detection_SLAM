@@ -39,12 +39,12 @@
 % to be turned off to cool down. 
 % 
 % Face detection %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% The source is in track.m but main executes the move commands. It works
+% The source is in follow.m but main executes the move commands. It works
 % pretty well as is but if it's misclassifying too many objects as faces
 % then tweak the parameters of the detector (e.g. increase the minimum box
 % size, increase the merge threshold, change the model, etc.). To make the
 % drone adjust more "responsively" tweak the thresholds for the vector
-% components in track.m. 
+% components in follow.m. 
 %
 % vSLAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % The source is vslam.m and is not handled by main. Hence, the drone is
@@ -60,6 +60,11 @@
 % Important: Matlab will crash if you disconnect from the drone's wifi
 % while there is still a drone object in the environment. Make sure you
 % clear the environment soon after resetting the run. 
+% 
+% Matlab's toolkit doesn't provide support for principal axes control.
+% Instead, movement is split between x, y, z (see move() documentation for
+% axes directions) and then turn in lieu of yaw. Although not the end of
+% the world, it is nonetheless a limitation. 
 
 %% initial cleanup
 
@@ -74,7 +79,7 @@ fprintf("Battery: %d\n",drone.Battery)
 
 takeoff(drone)
 pause(2) % after takeoff, the drone needs a grace period for connection
-moveup(drone,1.6,'WaitUntilDone',false)
+moveup(drone,1.75,'WaitUntilDone',false)
 
 %% face detection
 
@@ -88,11 +93,15 @@ stop = 60;
 count = 0;
 tic
 while toc < stop
-    [dX,dY,dZ,angle,faces] = track(cam,faceDetector,2);
+    [dX,dY,dZ,angle,faces] = follow(cam,faceDetector,2);
     
     imshow(faces)
-    imwrite(faces.CData,sprintf('./imgs/faces/faces%d.png',count))
-    count = count + 1;
+    try
+        imwrite(faces,sprintf('./imgs/faces/faces%d.png',count))
+        count = count + 1;
+    catch
+        imshow(faces)
+    end
     
     % try the command
     % if not received, continue and try again
@@ -122,10 +131,10 @@ land(drone)
 
 % see toolkit documentation for move() axes
 % values are in meters
-moveseq = {[0, 0.5, 0], 0; 
-           [0.5, 0, 0], 0;
-           [0, -0.5, 0], 0; 
-           [-0.5, 0, 0], 0};
+moveseq = {[0, -0.4, 0], 0; 
+%            [0.5, 0, 0], 0;
+           [0, 0.5, 0], 0}; 
+%            [-0.5, 0, 0], 0};
 
 % vslam
 % drone: drone object
@@ -136,3 +145,8 @@ moveseq = {[0, 0.5, 0], 0;
 vslam(drone, cam, moveseq, 5, 10)
 
 land(drone)
+
+%% final cleanup
+
+close all
+clear

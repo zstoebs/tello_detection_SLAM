@@ -1,4 +1,4 @@
-# Tello Face Detection & Tracking and vSLAM
+# Tello Face Following and vSLAM
 
 Implementation of face detection / following and vSLAM on a [Ryze Tello](https://www.ryzerobotics.com/tello) using its [Matlab toolkit](https://www.mathworks.com/hardware-support/tello-drone-matlab.html).
 
@@ -11,12 +11,14 @@ Implementation of face detection / following and vSLAM on a [Ryze Tello](https:/
 
 ## Contents
 - main.m: control flow script to demonstrate each of these on the Tello. 
-- track.m: facial detection algorithm that returns the movement vector required to center the drone on the detected face, if there is one. 
+- follow.m: face detection and following algorithm that returns the movement vector required to center the drone on the detected face, if there is one. 
 - vslam.m: implements vSLAM using the drone's pinhole camera given a predetermined movement sequence that should be cycled a handful of times. 
 
 ## Future
 1. Streamline main.m with user input to guide the program and improve the functionality of vslam.m as best I can for Tello. 
-The implementations here are stepping stones to some more intelligent autonomous UAV behavior. I have the idea that I'll implemennt path planning on a Tello as well. Once I have that, I may integrate these three features into a Tello hide-n-seek project.
+2. Implement general object detection alongside the face detection pipeline. 
+3. Add autonomous movement based on point cloud --> remove need for a predetermined path. 
+4. The implementations here are stepping stones to some more intelligent autonomous UAV behavior. I have the idea that I'll implemennt path planning on a Tello as well. Once I have that, I may integrate these three features into a Tello hide-n-seek project.
 
 ## References
 ### Papers
