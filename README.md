@@ -3,6 +3,7 @@
 Implementation of face detection / following and vSLAM on a [Ryze Tello](https://www.ryzerobotics.com/tello) using its [Matlab toolkit](https://www.mathworks.com/hardware-support/tello-drone-matlab.html).
 
 ## Usage
+You will need MATLAB R2020a or greater to access the Tello support package. You will also need the Computer Vision and Parallel Computing toolboxes. 
 1. Clone the repo, unzip help_fncs.zip, and move all the helper functions into the same directory as main, track, and vslam. Make an `imgs` directory in project directory in order to save the ORB feature and particle map figures. Make `faces` and `slam` subdirectories in `imgs`.
 2. Make sure that the Tello's firmware is updated and that the ground station is connected to the Tello's wifi.
 3. Run main.m in a Matlab environment.
